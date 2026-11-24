@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NOURÉ · Διαχείριση</title>
+<meta name="theme-color" content="#F4EFE8">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest-admin.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NOURÉ Admin">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --cream:#F4EFE8; --sand:#E8DFD4; --taupe:#7A6E63; --taupe-d:#5E544B;
+  --ink:#2E2823; --muted:#8C8178; --line:#D9CEC1; --white:#FBF8F4;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--cream);color:var(--ink);font-family:'Jost',sans-serif;font-weight:300}
+body{min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+.step-n,.dn,.bk .t{font-variant-numeric:lining-nums}
+.serif{font-family:'Cormorant Garamond',serif}
+.wrap{max-width:520px;margin:0 auto;padding:0 22px}
+
+/* header */
+header{text-align:center;padding:44px 0 26px}
+.logo{width:118px;height:118px;border-radius:50%;background:var(--taupe);margin:0 auto 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1f1a16}
+.logo b{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:27px;letter-spacing:1px}
+.logo small{font-family:'Cormorant Garamond',serif;font-size:8px;letter-spacing:1.6px;margin-top:1px}
+h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:34px;letter-spacing:4px}
+.sub{font-size:11px;letter-spacing:3.5px;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:var(--taupe-d);margin-top:18px}
+.rule{width:44px;height:1px;background:var(--taupe);margin:22px auto 0;opacity:.6}
+
+/* steps */
+.step{margin:30px 0}
+.step-h{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.step-n{font-family:"Jost",sans-serif;font-size:12px;letter-spacing:2px;color:var(--taupe);letter-spacing:1px}
+.step-t{font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:400}
+.hidden{display:none!important}
+
+.svc{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:17px 18px;margin-bottom:10px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:.2s}
+.svc .nm{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:500}
+.svc .du{font-size:12px;color:var(--muted);margin-top:2px;letter-spacing:.5px}
+.svc .ck{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.svc.on{background:var(--taupe);border-color:var(--taupe);color:var(--white)}
+.svc.on .du{color:#E9E1D8}
+.svc.on .ck{border-color:var(--white);background:var(--white)}
+.svc.on .ck::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--taupe)}
+
+.month{font-family:'Cormorant Garamond',serif;font-size:19px;margin-bottom:10px;text-transform:capitalize}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:0 0 58px;background:var(--white);border:1px solid var(--line);border-radius:30px;padding:12px 0;text-align:center;cursor:pointer;font:inherit;color:inherit}
+.day .dw{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.day .dn{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:500;margin-top:2px}
+.day.off{opacity:.35;cursor:default}
+.day.on{background:var(--ink);border-color:var(--ink);color:var(--white)}
+.day.on .dw{color:#BFB4A9}
+
+.times{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.times::-webkit-scrollbar{display:none}
+.tm{flex:0 0 76px;background:var(--white);border:1px solid var(--line);border-radius:30px;padding:14px 0;font:inherit;font-size:14px;color:inherit;cursor:pointer}
+.tm.on{background:var(--taupe);border-color:var(--taupe);color:var(--white)}
+.empty{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--muted);text-align:center;padding:14px 0}
+
+label{display:block;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin:0 0 6px 2px}
+input{width:100%;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:15px 16px;font:inherit;font-size:16px;color:var(--ink);margin-bottom:14px;outline:none}
+input:focus{border-color:var(--taupe)}
+
+.sum{background:var(--sand);border-radius:14px;padding:16px 18px;margin-bottom:16px;font-size:14px;line-height:1.75}
+.sum b{font-weight:500}
+.btn{display:block;width:100%;background:var(--ink);color:var(--white);border:0;border-radius:40px;padding:17px;font:inherit;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer}
+.btn:disabled{opacity:.4}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.err{color:#9A4B3F;font-size:13px;margin:-4px 0 12px 2px}
+
+.done{text-align:center;padding:40px 0 10px}
+.done .ic{width:66px;height:66px;border-radius:50%;border:1px solid var(--taupe);margin:0 auto 22px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--taupe)}
+.done h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:32px}
+.done p{color:var(--muted);margin:12px 0 26px;line-height:1.7;font-size:15px}
+
+footer{text-align:center;padding:40px 0 34px;font-size:11px;letter-spacing:2px;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+.adm-link{display:inline-block;margin-top:12px;opacity:.5;font-size:10px}
+
+/* admin */
+.adm-top{display:flex;justify-content:space-between;align-items:center;padding:26px 0 10px}
+.adm-top h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:28px}
+.small-btn{background:none;border:1px solid var(--line);border-radius:20px;padding:8px 14px;font:inherit;font-size:12px;color:var(--ink);cursor:pointer}
+.tabs{display:flex;gap:8px;margin:14px 0 18px}
+.tab{flex:1;background:var(--white);border:1px solid var(--line);border-radius:30px;padding:10px;font:inherit;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;color:inherit}
+.tab.on{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.dgroup{font-family:'Cormorant Garamond',serif;font-size:20px;margin:22px 0 10px;text-transform:capitalize;border-bottom:1px solid var(--line);padding-bottom:6px}
+.bk{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.bk.new{border-color:var(--taupe);box-shadow:0 0 0 1px var(--taupe)}
+.bk.blk{background:var(--sand)}
+.bk .t{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;min-width:54px}
+.bk .i{flex:1;font-size:14px;line-height:1.55}
+.bk .i b{font-weight:500}
+.bk .i a{color:var(--taupe-d)}
+.badge{display:inline-block;background:var(--taupe);color:var(--white);font-size:9px;letter-spacing:1.5px;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px}
+.notice{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--ink);color:var(--white);padding:13px 20px;border-radius:30px;font-size:13px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:90%;text-align:center}
+.block-box{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:6px}
+.row{display:flex;gap:10px}
+.row>div{flex:1}
+.demo{background:#EFE3D3;color:var(--taupe-d);font-size:12px;text-align:center;padding:8px 12px}
+</style>
+</head>
+<body>
+
+<div id="demoBar" class="demo hidden">Λειτουργία δοκιμής · τα ραντεβού δεν αποθηκεύονται ακόμα στη βάση</div>
+
+<!-- ===================== ΚΡΑΤΗΣΗ ===================== -->
+<main id="bookView" class="wrap">
+  <header>
+    <div class="logo"><b>NOURÉ</b><small>BROW ATELIER</small></div>
+    <h1>NOURÉ</h1>
+    <div class="sub">Brow Atelier · Αγγελική Νούρτσε</div>
+    <div class="tag">Your beauty era starts here.</div>
+    <div class="rule"></div>
+  </header>
+
+  <section id="flow">
+    <div class="step">
+      <div class="step-h"><span class="step-n">01</span><span class="step-t">Υπηρεσία</span></div>
+      <div id="svcList"></div>
+    </div>
+
+    <div class="step hidden" id="stepDate">
+      <div class="step-h"><span class="step-n">02</span><span class="step-t">Ημερομηνία</span></div>
+      <div class="month" id="monthLbl"></div>
+      <div class="days" id="days"></div>
+    </div>
+
+    <div class="step hidden" id="stepTime">
+      <div class="step-h"><span class="step-n">03</span><span class="step-t">Ώρα</span></div>
+      <div class="times" id="times"></div>
+    </div>
+
+    <div class="step hidden" id="stepInfo">
+      <div class="step-h"><span class="step-n">04</span><span class="step-t">Τα στοιχεία σου</span></div>
+      <label for="nm">Ονοματεπώνυμο</label>
+      <input id="nm" autocomplete="name" placeholder="π.χ. Μαρία Παπαδοπούλου">
+      <label for="ph">Τηλέφωνο</label>
+      <input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="69xxxxxxxx">
+      <div class="sum" id="sum"></div>
+      <div class="err hidden" id="err"></div>
+      <button class="btn" id="bookBtn">Κλείσε το ραντεβού</button>
+    </div>
+  </section>
+
+  <section id="doneView" class="done hidden">
+    <div class="ic">✓</div>
+    <h2>Σε περιμένουμε!</h2>
+    <p id="doneTxt"></p>
+    <button class="btn ghost" onclick="resetFlow()">Νέο ραντεβού</button>
+  </section>
+
+  <footer>
+    <a href="https://instagram.com/noure.brow.atelier" target="_blank" rel="noopener">@noure.brow.atelier</a><br>
+    <a href="admin.html" class="adm-link">Διαχείριση</a>
+  </footer>
+</main>
+
+<!-- ===================== ADMIN ===================== -->
+<main id="adminView" class="wrap hidden">
+  <div id="pinBox" style="padding-top:80px;text-align:center">
+    <div class="logo" style="width:84px;height:84px"><b style="font-size:19px">NOURÉ</b></div>
+    <h2 class="serif" style="font-weight:400;font-size:28px;margin-bottom:22px">Διαχείριση</h2>
+    <input id="pin" type="password" inputmode="numeric" placeholder="PIN" style="text-align:center;letter-spacing:8px;max-width:220px">
+    <div class="err hidden" id="pinErr" style="margin:0 0 12px">Λάθος PIN</div>
+    <button class="btn" style="max-width:220px;margin:0 auto" onclick="tryPin()">Είσοδος</button>
+    <p style="margin-top:30px"><a href="./" style="color:var(--muted);font-size:12px">← Πίσω στις κρατήσεις</a></p>
+  </div>
+
+  <div id="admPanel" class="hidden">
+    <div class="adm-top">
+      <h2>Τα ραντεβού μου</h2>
+      <button class="small-btn" onclick="logout()">Έξοδος</button>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-tab="up" onclick="setTab('up')">Επόμενα</button>
+      <button class="tab" data-tab="block" onclick="setTab('block')">Κλείσιμο ωρών</button>
+    </div>
+
+    <div id="tabUp"><div id="admList"></div></div>
+
+    <div id="tabBlock" class="hidden">
+      <div class="block-box">
+        <p style="font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6">Κλείσε μια ολόκληρη μέρα ή κάποιες ώρες, για να μην μπορούν να κλείσουν ραντεβού εκεί.</p>
+        <label>Ημερομηνία</label>
+        <input type="date" id="blDate">
+        <div class="row">
+          <div><label>Από</label><input type="time" id="blFrom" value="09:00" step="1800"></div>
+          <div><label>Έως</label><input type="time" id="blTo" value="21:00" step="1800"></div>
+        </div>
+        <button class="btn" onclick="addBlock()">Κλείσιμο</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+if(location.hash!=="#admin") history.replaceState(null,"","#admin");
+/* ============ ΡΥΘΜΙΣΕΙΣ ============ */
+const CONFIG = {
+  SUPABASE_URL: "https://mxthoghaznkgwnuaszib.supabase.co",        // π.χ. https://xxxx.supabase.co
+  SUPABASE_KEY: "sb_publishable_jkkAr7AfB4ETpQSxYYgvrQ_eXdE-0A2",        // το anon public key
+  OPEN_HOUR: 9,            // ανοίγει
+  CLOSE_HOUR: 21,          // κλείνει
+  CLOSED_DAYS: [0],        // 0 = Κυριακή
+  STEP_MIN: 30,            // κάθε πόσα λεπτά ξεκινάει ραντεβού
+  DAYS_AHEAD: 45,          // πόσες μέρες μπροστά μπορούν να κλείσουν
+  DEMO_PIN: "1234"         // PIN μόνο για τη λειτουργία δοκιμής
+};
+const SERVICES = [
+  {id:"lamination",  name:"Brow Lamination",                     dur:60},
+  {id:"lashlift",    name:"Lash Lift",                           dur:60},
+  {id:"extensions",  name:"Lash Extensions",                     dur:120},
+  {id:"microblading",name:"Microblading",                        dur:150},
+  {id:"brows",       name:"Καθαρισμός, σχήμα & βαφή φρυδιού",    dur:45}
+];
+/* =================================== */
+
+const GR_D=["Κυρ","Δευ","Τρί","Τετ","Πέμ","Παρ","Σάβ"];
+const GR_DL=["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
+const GR_M=["Ιανουαρίου","Φεβρουαρίου","Μαρτίου","Απριλίου","Μαΐου","Ιουνίου","Ιουλίου","Αυγούστου","Σεπτεμβρίου","Οκτωβρίου","Νοεμβρίου","Δεκεμβρίου"];
+const GR_MN=["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m};
+const toTime=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`;
+const prettyDate=s=>{const d=new Date(s+"T12:00");return `${GR_DL[d.getDay()]} ${d.getDate()} ${GR_M[d.getMonth()]}`};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Αποθήκευση: Supabase ή δοκιμή ---------- */
+const LIVE = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY && window.supabase);
+const sb = LIVE ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY) : null;
+if(!LIVE) $("demoBar").classList.remove("hidden");
+
+let demoStore=[];
+try{demoStore=JSON.parse(localStorage.getItem("noure_demo")||"[]")}catch(e){}
+const saveDemo=()=>{try{localStorage.setItem("noure_demo",JSON.stringify(demoStore))}catch(e){}};
+
+const DB={
+  async busy(date){ // μόνο ώρα & διάρκεια, χωρίς προσωπικά στοιχεία
+    if(!LIVE) return demoStore.filter(b=>b.date===date).map(b=>({time:b.time,duration:b.duration}));
+    const {data,error}=await sb.from("noure_busy_slots").select("time,duration").eq("date",date);
+    if(error) throw error; return data;
+  },
+  async book(b){
+    if(!LIVE){
+      const busy=demoStore.filter(x=>x.date===b.date);
+      if(overlaps(busy,toMin(b.time),b.duration)) throw new Error("taken");
+      demoStore.push({...b,id:String(Date.now()),seen:false}); saveDemo(); return;
+    }
+    const {error}=await sb.rpc("noure_book_slot",{p_name:b.name,p_phone:b.phone,p_service:b.service,p_date:b.date,p_time:b.time,p_duration:b.duration});
+    if(error){ if(/taken/i.test(error.message)) throw new Error("taken"); throw error; }
+  },
+  async loggedIn(){ return false; },
+  async logout(){},
+  async checkPin(pin){
+    if(!LIVE) return pin===CONFIG.DEMO_PIN;
+    const {data,error}=await sb.rpc("noure_admin_check",{p_pin:pin});
+    return !error && data===true;
+  },
+  async list(){
+    if(!LIVE) return [...demoStore];
+    const {data,error}=await sb.rpc("noure_admin_list",{p_pin:PIN}); if(error) throw error; return data;
+  },
+  async remove(id){
+    if(!LIVE){demoStore=demoStore.filter(b=>b.id!==id);saveDemo();return}
+    const {error}=await sb.rpc("noure_admin_delete",{p_pin:PIN,p_id:id}); if(error) throw error;
+  },
+  async markSeen(){
+    if(!LIVE){demoStore.forEach(b=>b.seen=true);saveDemo();return}
+    await sb.rpc("noure_admin_mark_seen",{p_pin:PIN});
+  },
+  async block(date,time,duration){
+    if(!LIVE){demoStore.push({id:String(Date.now()),name:"—",phone:"",service:"BLOCK",date,time,duration,seen:true});saveDemo();return}
+    const {error}=await sb.rpc("noure_admin_block",{p_pin:PIN,p_date:date,p_time:time,p_duration:duration}); if(error) throw error;
+  }
+};
+function overlaps(busy,start,dur){
+  return busy.some(b=>{const s=toMin(b.time.slice(0,5)),e=s+b.duration;return start<e && start+dur>s});
+}
+
+/* ---------- Ροή κράτησης ---------- */
+const st={svc:null,date:null,time:null};
+
+function renderServices(){
+  $("svcList").innerHTML=SERVICES.map(s=>`
+    <button class="svc ${st.svc?.id===s.id?"on":""}" onclick="pickSvc('${s.id}')">
+      <div><div class="nm">${s.name}</div></div>
+      <span class="ck"></span>
+    </button>`).join("");
+}
+function fmtDur(m){const h=Math.floor(m/60),r=m%60;return [h?`${h} ώρ${h>1?"ες":"α"}`:"",r?`${r} λεπτά`:""].filter(Boolean).join(" & ")}
+
+function pickSvc(id){
+  st.svc=SERVICES.find(s=>s.id===id); st.time=null;
+  renderServices(); $("stepDate").classList.remove("hidden"); renderDays();
+  if(st.date) loadTimes(); else hideFrom("stepTime");
+  setTimeout(()=>$("stepDate").scrollIntoView({behavior:"smooth",block:"start"}),60);
+}
+function hideFrom(id){["stepTime","stepInfo"].slice(["stepTime","stepInfo"].indexOf(id)).forEach(x=>$(x).classList.add("hidden"))}
+
+function renderDays(){
+  const today=new Date(); today.setHours(12,0,0,0);
+  let html="",firstMonth=null;
+  for(let i=0;i<CONFIG.DAYS_AHEAD;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const off=CONFIG.CLOSED_DAYS.includes(d.getDay());
+    const k=ymd(d); if(firstMonth===null) firstMonth=d.getMonth();
+    html+=`<button class="day ${off?"off":""} ${st.date===k?"on":""}" ${off?"disabled":""} data-m="${d.getMonth()}" data-y="${d.getFullYear()}" onclick="pickDate('${k}')">
+      <div class="dw">${GR_D[d.getDay()]}</div><div class="dn">${d.getDate()}</div></button>`;
+  }
+  $("days").innerHTML=html; updateMonth();
+}
+$("days").addEventListener("scroll",updateMonth);
+function updateMonth(){
+  const box=$("days"),btns=[...box.children];
+  const vis=btns.find(b=>b.offsetLeft+b.offsetWidth>box.scrollLeft+10)||btns[0];
+  if(vis) $("monthLbl").textContent=`${GR_MN[vis.dataset.m]} ${vis.dataset.y}`;
+}
+function pickDate(k){st.date=k;st.time=null;renderDays();loadTimes()}
+
+async function loadTimes(){
+  $("stepTime").classList.remove("hidden"); $("stepInfo").classList.add("hidden");
+  $("times").innerHTML=`<div class="empty" style="width:100%">Φόρτωση…</div>`;
+  let busy=[];
+  try{busy=await DB.busy(st.date)}catch(e){$("times").innerHTML=`<div class="empty" style="width:100%">Κάτι πήγε στραβά. Δοκίμασε ξανά.</div>`;return}
+  const dur=st.svc.dur, now=new Date(), isToday=st.date===ymd(now);
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const slots=[];
+  for(let m=CONFIG.OPEN_HOUR*60;m+dur<=CONFIG.CLOSE_HOUR*60;m+=CONFIG.STEP_MIN){
+    if(isToday && m<=nowMin+60) continue;
+    if(!overlaps(busy,m,dur)) slots.push(toTime(m));
+  }
+  $("times").innerHTML=slots.length?slots.map(t=>`<button class="tm ${st.time===t?"on":""}" onclick="pickTime('${t}')">${t}</button>`).join("")
+    :`<div class="empty" style="width:100%">Δεν υπάρχουν ελεύθερες ώρες. Διάλεξε άλλη μέρα.</div>`;
+  setTimeout(()=>$("stepTime").scrollIntoView({behavior:"smooth",block:"start"}),60);
+}
+function pickTime(t){
+  st.time=t;
+  document.querySelectorAll(".tm").forEach(b=>b.classList.toggle("on",b.textContent===t));
+  $("stepInfo").classList.remove("hidden");
+  $("sum").innerHTML=`<b>${st.svc.name}</b><br>${prettyDate(st.date)}<br>στις ${t}`;
+  setTimeout(()=>$("stepInfo").scrollIntoView({behavior:"smooth",block:"start"}),60);
+}
+
+$("bookBtn").onclick=async()=>{
+  const name=$("nm").value.trim(), phone=$("ph").value.replace(/\s/g,"");
+  const err=$("err"); err.classList.add("hidden");
+  if(name.length<3) return showErr("Γράψε το ονοματεπώνυμό σου.");
+  if(!/^\+?\d{10,14}$/.test(phone)) return showErr("Γράψε ένα σωστό τηλέφωνο.");
+  $("bookBtn").disabled=true; $("bookBtn").textContent="Μισό λεπτό…";
+  try{
+    await DB.book({name,phone,service:st.svc.name,date:st.date,time:st.time,duration:st.svc.dur});
+    $("flow").classList.add("hidden"); $("doneView").classList.remove("hidden");
+    $("doneTxt").innerHTML=`<b style="color:var(--ink);font-weight:500">${esc(st.svc.name)}</b><br>${prettyDate(st.date)}, στις ${st.time}<br><br>Αν χρειαστεί να το αλλάξεις, στείλε μου στο Instagram.`;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch(e){
+    if(e.message==="taken"){showErr("Αυτή η ώρα μόλις κλείστηκε. Διάλεξε άλλη.");loadTimes()}
+    else showErr("Κάτι πήγε στραβά. Δοκίμασε ξανά.");
+  }finally{$("bookBtn").disabled=false;$("bookBtn").textContent="Κλείσε το ραντεβού"}
+  function showErr(m){err.textContent=m;err.classList.remove("hidden")}
+};
+function showErr(m){$("err").textContent=m;$("err").classList.remove("hidden")}
+
+function resetFlow(){
+  Object.assign(st,{svc:null,date:null,time:null}); $("nm").value=""; $("ph").value="";
+  ["stepDate","stepTime","stepInfo"].forEach(x=>$(x).classList.add("hidden"));
+  $("flow").classList.remove("hidden"); $("doneView").classList.add("hidden"); renderServices();
+}
+
+/* ---------- Admin ---------- */
+let PIN=null, seenIds=new Set(), pollT=null, tab="up";
+function route(){
+  const adm=location.hash==="#admin";
+  $("bookView").classList.toggle("hidden",adm); $("adminView").classList.toggle("hidden",!adm);
+  if(adm){ try{PIN=sessionStorage.getItem("noure_pin")}catch(e){} if(PIN) openPanel(); }
+  else { clearInterval(pollT); }
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")tryPin()});
+
+async function tryPin(){
+  const p=$("pin").value.trim();
+  if(await DB.checkPin(p)){PIN=p;try{sessionStorage.setItem("noure_pin",p)}catch(e){};$("pinErr").classList.add("hidden");openPanel()}
+  else $("pinErr").classList.remove("hidden");
+}
+function logout(){DB.logout();PIN=null;try{sessionStorage.removeItem("noure_pin")}catch(e){};clearInterval(pollT);$("admPanel").classList.add("hidden");$("pinBox").classList.remove("hidden");$("pin").value=""}
+function openPanel(){
+  $("pinBox").classList.add("hidden"); $("admPanel").classList.remove("hidden");
+  $("blDate").value=ymd(new Date());
+  loadAdmin(true); clearInterval(pollT); pollT=setInterval(()=>loadAdmin(false),30000);
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden && PIN && location.hash==="#admin") loadAdmin(false)});
+function setTab(t){
+  tab=t; document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  $("tabUp").classList.toggle("hidden",t!=="up"); $("tabBlock").classList.toggle("hidden",t!=="block");
+}
+
+async function loadAdmin(first){
+  let rows;
+  try{rows=await DB.list()}catch(e){ if(first){logout();} return }
+  const todayK=ymd(new Date());
+  rows=rows.filter(r=>r.date>=todayK).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const fresh=rows.filter(r=>!r.seen && r.service!=="BLOCK");
+  if(!first){
+    const brandNew=fresh.filter(r=>!seenIds.has(r.id));
+    if(brandNew.length) notify(brandNew.length===1?`Νέο ραντεβού: ${brandNew[0].name}, ${brandNew[0].time.slice(0,5)}`:`${brandNew.length} νέα ραντεβού!`);
+  }
+  fresh.forEach(r=>seenIds.add(r.id));
+  document.title=fresh.length?`(${fresh.length}) Νέα ραντεβού · NOURÉ`:"Διαχείριση · NOURÉ";
+  if(!rows.length){$("admList").innerHTML=`<div class="empty" style="padding:40px 0">Δεν υπάρχουν επόμενα ραντεβού.</div>`;return}
+  let html="",last="";
+  rows.forEach(r=>{
+    if(r.date!==last){html+=`<div class="dgroup">${r.date===todayK?"Σήμερα · ":""}${prettyDate(r.date)}</div>`;last=r.date}
+    const t=r.time.slice(0,5), end=toTime(toMin(t)+r.duration);
+    if(r.service==="BLOCK"){
+      html+=`<div class="bk blk"><div class="t">${t}</div><div class="i"><b>Κλειστό</b><br>έως ${end}</div><button class="x" onclick="del('${r.id}',true)">×</button></div>`;
+    }else{
+      html+=`<div class="bk ${!r.seen?"new":""}"><div class="t">${t}</div><div class="i"><b>${esc(r.name)}</b>${!r.seen?'<span class="badge">ΝΕΟ</span>':""}<br>${esc(r.service)} · έως ${end}<br><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></div><button class="x" onclick="del('${r.id}',false)">×</button></div>`;
+    }
+  });
+  $("admList").innerHTML=html;
+  if(fresh.length) setTimeout(()=>DB.markSeen(),4000);
+}
+async function del(id,isBlock){
+  const ok=window.confirm(isBlock?"Να ανοίξει ξανά αυτό το διάστημα;":"Να ακυρωθεί αυτό το ραντεβού;");
+  if(!ok) return;
+  try{await DB.remove(id);loadAdmin(true)}catch(e){notify("Δεν έγινε η διαγραφή")}
+}
+async function addBlock(){
+  const d=$("blDate").value,f=$("blFrom").value,t=$("blTo").value;
+  if(!d||!f||!t||toMin(t)<=toMin(f)) return notify("Έλεγξε ημερομηνία και ώρες");
+  try{await DB.block(d,f,toMin(t)-toMin(f));notify("Έκλεισε ✓");setTab("up");loadAdmin(true)}catch(e){notify("Κάτι πήγε στραβά")}
+}
+function notify(msg){
+  const n=document.createElement("div");n.className="notice";n.textContent=msg;document.body.appendChild(n);
+  try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}
+  setTimeout(()=>n.remove(),4500);
+}
+
+renderServices(); route();
+</script>
+</body>
+</html>
