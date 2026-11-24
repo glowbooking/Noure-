@@ -73,6 +73,8 @@ h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:34px;letter-
 label{display:block;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin:0 0 6px 2px}
 input{width:100%;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:15px 16px;font:inherit;font-size:16px;color:var(--ink);margin-bottom:14px;outline:none}
 input:focus{border-color:var(--taupe)}
+input.bad{border-color:#9A4B3F;background:#FBF1EE}
+.err{font-weight:400}
 
 .sum{background:var(--sand);border-radius:14px;padding:16px 18px;margin-bottom:16px;font-size:14px;line-height:1.75}
 .sum b{font-weight:500}
@@ -158,8 +160,8 @@ footer a{color:var(--muted);text-decoration:none}
       <label for="nm">Ονοματεπώνυμο</label>
       <input id="nm" autocomplete="name" placeholder="π.χ. Μαρία Παπαδοπούλου">
       <label for="ph">Τηλέφωνο</label>
-      <input id="ph" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="69xxxxxxxx" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
-      <div class="sum" id="sum"></div>
+      <input id="ph" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="69xxxxxxxx" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);this.classList.remove('bad');document.getElementById('phErr').classList.add('hidden')">
+      <div class="err hidden" id="phErr" style="margin-top:-8px">Ο αριθμός δεν αντιστοιχεί.</div>
       <div class="err hidden" id="err"></div>
       <button class="btn" id="bookBtn">Κλείσε το ραντεβού</button>
     </div>
@@ -231,7 +233,7 @@ const SERVICES = [
   {id:"lashlift",    name:"Lash Lift",                           dur:60},
   {id:"extensions",  name:"Lash Extensions",                     dur:120},
   {id:"microblading",name:"Microblading",                        dur:150},
-  {id:"brows",       name:"Καθαρισμός, σχήμα & βαφή φρυδιού",    dur:45}
+  {id:"brows",       name:"Brow Clean-up, Shape & Tint",         dur:45}
 ];
 /* =================================== */
 
@@ -359,15 +361,14 @@ function pickTime(t){
   st.time=t;
   document.querySelectorAll(".tm").forEach(b=>b.classList.toggle("on",b.textContent===t));
   $("stepInfo").classList.remove("hidden");
-  $("sum").innerHTML=`<b>${st.svc.name}</b><br>${prettyDate(st.date)}<br>στις ${t}`;
-  setTimeout(()=>$("stepInfo").scrollIntoView({behavior:"smooth",block:"start"}),60);
+    setTimeout(()=>$("stepInfo").scrollIntoView({behavior:"smooth",block:"start"}),60);
 }
 
 $("bookBtn").onclick=async()=>{
   const name=$("nm").value.trim(), phone=$("ph").value.replace(/\s/g,"");
   const err=$("err"); err.classList.add("hidden");
   if(name.length<3) return showErr("Γράψε το ονοματεπώνυμό σου.");
-  if(!/^\d{10}$/.test(phone)) return showErr("Ο αριθμός δεν αντιστοιχεί.");
+  if(!/^\d{10}$/.test(phone)){ $("ph").classList.add("bad"); $("phErr").classList.remove("hidden"); $("ph").scrollIntoView({behavior:"smooth",block:"center"}); return; }
   $("bookBtn").disabled=true; $("bookBtn").textContent="Μισό λεπτό…";
   try{
     await DB.book({name,phone,service:st.svc.name,date:st.date,time:st.time,duration:st.svc.dur});
