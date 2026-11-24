@@ -21,7 +21,7 @@
   --cream:#F4EFE8; --sand:#E8DFD4; --taupe:#7A6E63; --taupe-d:#5E544B;
   --ink:#2E2823; --muted:#8C8178; --line:#D9CEC1; --white:#FBF8F4;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+*{font-variant-numeric:lining-nums;box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--cream);color:var(--ink);font-family:'Jost',sans-serif;font-weight:300}
 body{min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
 .step-n,.dn,.bk .t{font-variant-numeric:lining-nums}
@@ -112,6 +112,14 @@ footer a{color:var(--muted);text-decoration:none}
 .row{display:flex;gap:10px}
 .row>div{flex:1}
 .demo{background:#EFE3D3;color:var(--taupe-d);font-size:12px;text-align:center;padding:8px 12px}
+
+/* Τα ελληνικά με Jost, γιατί η Cormorant δεν έχει ελληνικά */
+.svc .nm.gr{font-family:'Jost',sans-serif;font-weight:400;font-size:17px;letter-spacing:.2px;line-height:1.35}
+.month{font-family:'Jost',sans-serif!important;font-size:14px!important;letter-spacing:1.5px;font-weight:400}
+.dgroup,.adm-top h2,.done h2{font-family:'Jost',sans-serif!important;font-weight:300!important}
+.dgroup{font-size:16px!important;letter-spacing:.5px}
+.adm-top h2,.done h2{font-size:24px!important}
+.empty{font-family:'Jost',sans-serif!important;font-style:normal!important;font-size:15px!important}
 </style>
 </head>
 <body>
@@ -297,7 +305,7 @@ const st={svc:null,date:null,time:null};
 function renderServices(){
   $("svcList").innerHTML=SERVICES.map(s=>`
     <button class="svc ${st.svc?.id===s.id?"on":""}" onclick="pickSvc('${s.id}')">
-      <div><div class="nm">${s.name}</div></div>
+      <div><div class="nm ${/[\u0370-\u03FF]/.test(s.name)?"gr":""}">${s.name}</div></div>
       <span class="ck"></span>
     </button>`).join("");
 }
