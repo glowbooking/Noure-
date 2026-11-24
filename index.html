@@ -158,7 +158,7 @@ footer a{color:var(--muted);text-decoration:none}
       <label for="nm">Ονοματεπώνυμο</label>
       <input id="nm" autocomplete="name" placeholder="π.χ. Μαρία Παπαδοπούλου">
       <label for="ph">Τηλέφωνο</label>
-      <input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="69xxxxxxxx">
+      <input id="ph" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="69xxxxxxxx" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
       <div class="sum" id="sum"></div>
       <div class="err hidden" id="err"></div>
       <button class="btn" id="bookBtn">Κλείσε το ραντεβού</button>
@@ -366,7 +366,7 @@ $("bookBtn").onclick=async()=>{
   const name=$("nm").value.trim(), phone=$("ph").value.replace(/\s/g,"");
   const err=$("err"); err.classList.add("hidden");
   if(name.length<3) return showErr("Γράψε το ονοματεπώνυμό σου.");
-  if(!/^\+?\d{10,14}$/.test(phone)) return showErr("Γράψε ένα σωστό τηλέφωνο.");
+  if(!/^\d{10}$/.test(phone)) return showErr("Ο αριθμός δεν αντιστοιχεί.");
   $("bookBtn").disabled=true; $("bookBtn").textContent="Μισό λεπτό…";
   try{
     await DB.book({name,phone,service:st.svc.name,date:st.date,time:st.time,duration:st.svc.dur});
@@ -392,7 +392,7 @@ let PIN=null, seenIds=new Set(), pollT=null, tab="up";
 function route(){
   const adm=location.hash==="#admin";
   $("bookView").classList.toggle("hidden",adm); $("adminView").classList.toggle("hidden",!adm);
-  if(adm){ try{PIN=sessionStorage.getItem("noure_pin")}catch(e){} if(PIN) openPanel(); }
+  if(adm){ try{PIN=localStorage.getItem("noure_pin")}catch(e){} if(PIN) openPanel(); }
   else { clearInterval(pollT); }
   window.scrollTo(0,0);
 }
@@ -401,10 +401,10 @@ $("pin").addEventListener("keydown",e=>{if(e.key==="Enter")tryPin()});
 
 async function tryPin(){
   const p=$("pin").value.trim();
-  if(await DB.checkPin(p)){PIN=p;try{sessionStorage.setItem("noure_pin",p)}catch(e){};$("pinErr").classList.add("hidden");openPanel()}
+  if(await DB.checkPin(p)){PIN=p;try{localStorage.setItem("noure_pin",p)}catch(e){};$("pinErr").classList.add("hidden");openPanel()}
   else $("pinErr").classList.remove("hidden");
 }
-function logout(){DB.logout();PIN=null;try{sessionStorage.removeItem("noure_pin")}catch(e){};clearInterval(pollT);$("admPanel").classList.add("hidden");$("pinBox").classList.remove("hidden");$("pin").value=""}
+function logout(){DB.logout();PIN=null;try{localStorage.removeItem("noure_pin")}catch(e){};clearInterval(pollT);$("admPanel").classList.add("hidden");$("pinBox").classList.remove("hidden");$("pin").value=""}
 function openPanel(){
   $("pinBox").classList.add("hidden"); $("admPanel").classList.remove("hidden");
   $("blDate").value=ymd(new Date());
